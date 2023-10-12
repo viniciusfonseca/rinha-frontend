@@ -1,13 +1,31 @@
 <template>
   <div class="wrapper">
-    <RecycleScroller :key="pageModeFullPage" ref="scroller" class="scroller" :items="items" :item-size="itemHeight"
-      :buffer="buffer" :page-mode="pageMode">
+    <RecycleScroller :key="pageModeFullPage" ref="scroller" class="scroller" :items="items" :item-size="28"
+      :buffer="buffer" :page-mode="pageMode" key-field="i">
       <template #default="props">
-        <Row :item="props.item" />
+        <Row :item="props.item.s" />
       </template>
     </RecycleScroller>
   </div>
 </template>
+
+<style scoped>
+.wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  height: 100vh;
+  width: 100vw;
+}
+.scroller {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  max-width: 720px;
+  height: 100%;
+  overflow-y: auto;
+}
+</style>
 
 <script>
 import Row from './Row.vue';
@@ -16,7 +34,6 @@ export default {
   data() {
     return {
       items: window.rows,
-      count: 10000,
       renderScroller: true,
       showScroller: true,
       scopedSlots: false,
@@ -31,7 +48,7 @@ export default {
     };
   },
   computed: {
-    itemHeight() { return 20; },
+    itemHeight() { return 22; },
   },
   components: { Row }
 }
