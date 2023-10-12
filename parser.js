@@ -11,7 +11,6 @@ recv = chunk => {
 onmessage = event => {
   try {
     wasm_bindgen.parse(event.data)
-    console.log('finished parsing json')
     postMessage(null)
   }
   catch (e) {

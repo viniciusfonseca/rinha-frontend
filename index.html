@@ -85,11 +85,12 @@
       }
 
       async function handleFileInput() {
-        const start = performance.now()
+        let start = performance.now()
         const buf = await inputEl.files[0].arrayBuffer()
         console.log(`got buffer in ${performance.now() - start}ms`)
         setSpinnerStatus(true)
         setErrMsg(null)
+        start = performance.now()
         parseWorker.postMessage(new Uint8Array(buf))
         window.rows = []
         parseWorker.onmessage = event => {
@@ -103,6 +104,9 @@
             setErrMsg('Invalid file. Please load a valid JSON file.')
             setSpinnerStatus(false)
             return
+          }
+          if (rows.length === 0) {
+            console.log(`finished parsing json in ${performance.now() - start}ms`)
           }
           window.rows.push(...event.data.split('\x1E'))
           setSpinnerStatus(false)
