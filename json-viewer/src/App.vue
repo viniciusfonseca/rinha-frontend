@@ -1,6 +1,6 @@
 <template>
   <div class="wrapper">
-    <RecycleScroller :key="pageModeFullPage" ref="scroller" class="scroller" :items="list" :item-size="itemHeight"
+    <RecycleScroller :key="pageModeFullPage" ref="scroller" class="scroller" :items="items" :item-size="itemHeight"
       :buffer="buffer" :page-mode="pageMode">
       <template #default="props">
         <Row :item="props.item" />

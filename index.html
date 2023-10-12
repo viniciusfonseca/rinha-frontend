@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/clarinet/0.12.6/clarinet.min.js" integrity="sha512-OukDua33cEwV4YXAjCtixw29ZWs/jx8Dzu+C9BMkfvTAdyxMEuKoWLaeU69gtmJE+JeI0MefF6HIsQ02FrfMzg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="json-viewer/dist/assets/index.js"></script>
     <style>
       body {
         margin: 0;
@@ -61,6 +62,8 @@
       <p id="errmsg" style="display: none"></p>
     </div>
 
+    <div id="json-viewer"></div>
+
     <script>
 
       /** @type {HTMLInputElement} */
@@ -70,6 +73,7 @@
       const spinnerEl = document.getElementById('spinner')
       const inputLabelEl = document.getElementById('input_label')
       const parseWorker = new Worker('parser.js')
+      const homeEl = document.getElementById('home')
 
       function setErrMsg(msg) {
         if (!msg) { errMsgEl.style.display = 'none' }
@@ -87,7 +91,7 @@
       async function handleFileInput() {
         let start = performance.now()
         const buf = await inputEl.files[0].arrayBuffer()
-        console.log(`got buffer in ${performance.now() - start}ms`)
+        console.log(`got buffer in ${Math.ceil(performance.now() - start)}ms`)
         setSpinnerStatus(true)
         setErrMsg(null)
         start = performance.now()
@@ -105,11 +109,17 @@
             setSpinnerStatus(false)
             return
           }
+          let shouldRenderViewer = false
           if (rows.length === 0) {
             console.log(`finished parsing json in ${performance.now() - start}ms`)
+            shouldRenderViewer = true
           }
           window.rows.push(...event.data.split('\x1E'))
           setSpinnerStatus(false)
+          if (shouldRenderViewer) {
+            homeEl.parentNode.removeChild(homeEl)
+            window.mountVirtualScroller('#json-viewer')
+          }
         }
       }
     </script>
