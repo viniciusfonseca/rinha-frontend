@@ -31,7 +31,6 @@
 }
 .index {
   color: #BFBFBF;
-  transform: translateX(-4px);
 }
 .openbracket {
   color: #F2CAB8;
@@ -40,12 +39,13 @@
 .closebracket {
   color: #F2CAB8;
   font-weight: bold;
-  transform: translateX(-2px);
+  transform: translateX(2px);
 }
 .indent {
   width: 1px;
   height: 28px;
-  margin-right: 16px;
+  margin-left: 4px;
+  margin-right: 12px;
   background-color: #BFBFBF;
 }
 </style>
