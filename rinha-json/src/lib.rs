@@ -1,5 +1,6 @@
 use wasm_bindgen::prelude::*;
-use serde_json::Value;
+// use serde_json::Value;
+use simd_json::{value::borrowed::Value, StaticNode};
 
 #[wasm_bindgen]
 extern "C" {
@@ -8,7 +9,7 @@ extern "C" {
 
 #[wasm_bindgen]
 pub fn parse(buf: &mut [u8]) -> Result<(), JsError> {
-    let root = simd_json::serde::from_slice::<Value>(buf)?;
+    let root = simd_json::to_borrowed_value(buf)?;
     let mut result = Vec::<String>::new();
     mount_rows(&mut result, &root, 0);
     if result.first().is_some() {
@@ -55,9 +56,15 @@ fn mount_rows(result: &mut Vec<String>, node: &Value, indent: u16) {
 
 fn get_display(value: &Value) -> String {
     match value {
-        Value::Null => "null".into(),
-        Value::Bool(b) => b.to_string(),
-        Value::Number(n) => n.to_string(),
+        Value::Static(node) => {
+            match node {
+                StaticNode::Null => "null".into(),
+                StaticNode::I64(i) => i.to_string(),
+                StaticNode::U64(u) => u.to_string(),
+                StaticNode::F64(f) => f.to_string(),
+                StaticNode::Bool(b) => b.to_string(),
+            }
+        },
         Value::String(s) => format!("\"{s}\"").to_string(),
         Value::Array(_) => "[".into(),
         Value::Object(_) => "".into(),
