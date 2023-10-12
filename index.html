@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/clarinet/0.12.6/clarinet.min.js" integrity="sha512-OukDua33cEwV4YXAjCtixw29ZWs/jx8Dzu+C9BMkfvTAdyxMEuKoWLaeU69gtmJE+JeI0MefF6HIsQ02FrfMzg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link href="json-viewer/dist/assets/index.css" rel="stylesheet">
     <script src="json-viewer/dist/assets/index.js"></script>
     <style>
       body {
@@ -92,6 +92,7 @@
         let start = performance.now()
         const buf = await inputEl.files[0].arrayBuffer()
         console.log(`got buffer in ${Math.ceil(performance.now() - start)}ms`)
+        window.filename = inputEl.files[0].name
         setSpinnerStatus(true)
         setErrMsg(null)
         start = performance.now()
@@ -114,7 +115,7 @@
             console.log(`finished parsing json in ${performance.now() - start}ms`)
             shouldRenderViewer = true
           }
-          window.rows.push(...event.data.split('\x1E'))
+          window.rows.push(...event.data.split('\x1E').map((s, i) => ({ s, i })))
           setSpinnerStatus(false)
           if (shouldRenderViewer) {
             homeEl.parentNode.removeChild(homeEl)

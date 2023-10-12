@@ -23,6 +23,8 @@
   max-width: 720px;
   width: 100%;
   text-align: left;
+  margin-block-start: 0.67em;
+  margin-block-end: 0.67em;
 }
 .scroller {
   display: flex;
