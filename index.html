@@ -1,128 +1,203 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title> JSON Tree Viewer </title>
-    <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700&display=swap" rel="stylesheet">
-    <link href="json-viewer/dist/assets/index.css" rel="stylesheet">
-    <script src="json-viewer/dist/assets/index.js"></script>
-    <style>
-      body {
-        margin: 0;
-        font-family: 'Inter', sans-serif;
-      }
-      h1 { margin: 0; font-weight: bold; }
-      #file { visibility: hidden; }
-      #home {
-        height: 100vh;
-        width: 100vw;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-      }
-      .btn {
-        background: linear-gradient(0deg, rgba(228,228,228,1) 0%, rgba(247,247,247,1) 100%);
-        padding: 6px 12px;
-        border: 1px solid #000;
-        border-radius: 5px;
-      }
-      #title {
-        font-size: 2.5em
-      }
-      #subtitle {
-        font-size: 1.25em
-      }
-      #errmsg {
-        color: #BF0E0E;
-        margin: 0
-      }
-      #spinner {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        flex-direction: column;
-      }
-    </style>
-  </head>
-  <body>
-    <div id="home">
-      <h1 id="title"> JSON Tree Viewer </h1>
-      <p id="subtitle"> Simple JSON Viewer that runs completely on-client. No data exchange </p>
-      <label id="input_label" for="file" class="btn"> Load JSON </label>
-      <input id="file" type="file" title="Load JSON" onchange="handleFileInput()" />
-      <div id="spinner" style="display: none">
-        <p> Parsing JSON... </p>
-        <img src="spinner.gif" height="64" width="64">
-      </div>
-      <p id="errmsg" style="display: none"></p>
+
+<head>
+  <title> JSON Tree Viewer </title>
+  <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700&display=swap" rel="stylesheet">
+  <link href="json-viewer/dist/styles.css" rel="stylesheet">
+  <script src="json-viewer/dist/index.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+    }
+
+    h1 {
+      margin: 0;
+      font-weight: bold;
+    }
+
+    #file {
+      visibility: hidden;
+    }
+
+    #home {
+      height: 100vh;
+      width: 100vw;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .btn {
+      background: linear-gradient(0deg, rgba(228, 228, 228, 1) 0%, rgba(247, 247, 247, 1) 100%);
+      padding: 6px 12px;
+      border: 1px solid #000;
+      border-radius: 5px;
+    }
+
+    #title {
+      font-size: 2.5em
+    }
+
+    #subtitle {
+      font-size: 1.25em
+    }
+
+    #errmsg {
+      color: #BF0E0E;
+      margin: 0
+    }
+
+    #spinner {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+
+    /* json viewer styles */
+    .wrapper {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      width: 100vw;
+    }
+    .wrapper h1 {
+      max-width: 720px;
+      width: 100%;
+      text-align: left;
+      margin-block-start: 0.67em;
+      margin-block-end: 0.67em;
+    }
+    .row {
+      display: flex;
+      align-items: center;
+      height: 28px;
+    }
+    .field {
+      color: #4E9590
+    }
+    .index {
+      color: #BFBFBF;
+    }
+    .openbracket {
+      color: #F2CAB8;
+      font-weight: bold;
+    }
+    .closebracket {
+      color: #F2CAB8;
+      font-weight: bold;
+      transform: translateX(2px);
+    }
+    .indent {
+      width: 1px;
+      height: 28px;
+      margin-left: 4px;
+      margin-right: 12px;
+      background-color: #BFBFBF;
+    }
+    .list {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      max-width: 720px;
+      width: 100%;
+      height: 100%;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="home">
+    <h1 id="title"> JSON Tree Viewer </h1>
+    <p id="subtitle"> Simple JSON Viewer that runs completely on-client. No data exchange </p>
+    <label id="input_label" for="file" class="btn"> Load JSON </label>
+    <input id="file" type="file" title="Load JSON" onchange="handleFileInput()" />
+    <div id="spinner" style="display: none">
+      <p> Parsing JSON... </p>
+      <img src="spinner.gif" height="64" width="64">
     </div>
+    <p id="errmsg" style="display: none"></p>
+  </div>
 
-    <div id="json-viewer"></div>
+  <div id="json-viewer"></div>
 
-    <script>
+  <script>
 
-      /** @type {HTMLInputElement} */
-      const inputEl = document.getElementById('file')
-      const errMsgEl = document.getElementById('errmsg')
-      const status = document.getElementById('status')
-      const spinnerEl = document.getElementById('spinner')
-      const inputLabelEl = document.getElementById('input_label')
-      const parseWorker = new Worker('parser.js')
-      const homeEl = document.getElementById('home')
+    /** @type {HTMLInputElement} */
+    const inputEl = document.getElementById('file')
+    const errMsgEl = document.getElementById('errmsg')
+    const status = document.getElementById('status')
+    const spinnerEl = document.getElementById('spinner')
+    const inputLabelEl = document.getElementById('input_label')
+    const homeEl = document.getElementById('home')
+    const jsonViewerEl = document.getElementById('json-viewer')
 
-      function setErrMsg(msg) {
-        if (!msg) { errMsgEl.style.display = 'none' }
-        else {
-          errMsgEl.style.display = 'unset'
-          errMsgEl.innerText = msg
+    let hyperlist
+
+    function setErrMsg(msg) {
+      if (!msg) { errMsgEl.style.display = 'none' }
+      else {
+        errMsgEl.style.display = 'unset'
+        errMsgEl.innerText = msg
+      }
+    }
+
+    function setSpinnerStatus(show) {
+      spinnerEl.style.display = show ? 'flex' : 'none'
+      inputLabelEl.style.display = show ? 'none' : 'unset'
+    }
+
+    const parseWorker = new Worker('parser.js')
+    async function handleFileInput() {
+      let start = performance.now()
+      const buf = await inputEl.files[0].arrayBuffer()
+      console.log(`got buffer in ${Math.ceil(performance.now() - start)}ms`)
+      window.filename = inputEl.files[0].name
+      setSpinnerStatus(true)
+      setErrMsg(null)
+      start = performance.now()
+      parseWorker.postMessage(new Uint8Array(buf))
+      window.rows = []
+      parseWorker.onmessage = event => {
+        if (event.data === null) {
+          parseWorker.terminate()
+          console.log('finished streaming json')
+          return
         }
-      }
-
-      function setSpinnerStatus(show) {
-        spinnerEl.style.display = show ? 'flex' : 'none'
-        inputLabelEl.style.display = show ? 'none' : 'unset'
-      }
-
-      async function handleFileInput() {
-        let start = performance.now()
-        const buf = await inputEl.files[0].arrayBuffer()
-        console.log(`got buffer in ${Math.ceil(performance.now() - start)}ms`)
-        window.filename = inputEl.files[0].name
-        setSpinnerStatus(true)
-        setErrMsg(null)
-        start = performance.now()
-        parseWorker.postMessage(new Uint8Array(buf))
-        window.rows = []
-        parseWorker.onmessage = event => {
-          if (event.data === null) {
-            parseWorker.terminate()
-            console.log('finished streaming json')
-            return
-          }
-          if (event.data instanceof Error) {
-            console.error(event.data)
-            setErrMsg('Invalid file. Please load a valid JSON file.')
-            setSpinnerStatus(false)
-            return
-          }
-          let shouldRenderViewer = false
-          if (rows.length === 0) {
-            console.log(`finished parsing json in ${performance.now() - start}ms`)
-            shouldRenderViewer = true
-          }
-          window.rows.push(...event.data.split('\x1E').map((s, i) => ({ s, i })))
+        if (event.data instanceof Error) {
+          console.error(event.data)
+          setErrMsg('Invalid file. Please load a valid JSON file.')
           setSpinnerStatus(false)
-          if (shouldRenderViewer) {
-            homeEl.parentNode.removeChild(homeEl)
-            window.mountVirtualScroller('#json-viewer')
-          }
+          return
+        }
+        let shouldRenderViewer = false
+        if (rows.length === 0) {
+          console.log(`finished parsing json in ${performance.now() - start}ms`)
+          shouldRenderViewer = true
+        }
+        window.rows.push(...event.data.split('\x1E'))
+        if (shouldRenderViewer) {
+          setSpinnerStatus(false)
+          homeEl.parentNode.removeChild(homeEl)
+          window.mountJSONViewer('json-viewer')
+        }
+        else {
+          window.updateRowCount(window.rows.length)
         }
       }
-    </script>
-  </body>
+    }
+  </script>
+</body>
+
 </html>
