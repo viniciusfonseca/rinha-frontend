@@ -41,7 +41,6 @@ function rowRenderer({ index, key, style }) {
   indent = +indent
   const openbracket = display === '[' && display
   const closebracket = display === ']' && display
-  console.log('!isNaN(index)', index, !isNaN(index))
   return (
     <div className="row" key={key} style={style}>
       &nbsp;
