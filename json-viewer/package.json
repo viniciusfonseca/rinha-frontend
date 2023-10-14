@@ -1,19 +1,21 @@
 {
-  "name": "json-viewer",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
+  "name": "json-viewer-react",
+  "module": "index.ts",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "vue": "^3.3.4",
-    "vue-virtual-scroller": "^2.0.0-beta.8"
+    "build": "bun build index.jsx --minify --outdir dist && cp ./node_modules/react-virtualized/styles.css dist"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^4.2.3",
-    "vite": "^4.4.5"
+    "@types/react": "^18.2.28",
+    "@types/react-dom": "^18.2.13",
+    "@types/react-virtualized": "^9.21.23",
+    "bun-types": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-virtualized": "^9.22.5"
   }
 }

@@ -74,7 +74,7 @@ fn get_display(value: &Value) -> String {
 fn push_row(result: &mut Vec<String>, key: &str, display: &str, indent: u16) {
     let row = format!("{}\x1F{}\x1F{}", key, display, indent);
     result.push(row);
-    if result.len() == 1000 {
+    if result.len() == 100000 {
         recv(&result.join("\x1E").as_bytes());
         result.clear();
     }
