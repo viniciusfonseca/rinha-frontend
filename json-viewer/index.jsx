@@ -36,11 +36,12 @@ function App() {
 
 function rowRenderer({ index, key, style }) {
   let [ field, display, indent ] = window.rows[index].split('\x1F')
-  field = field && (field + ':')
   index = parseInt(field) && field
+  field = field && (field + ':')
   indent = +indent
   const openbracket = display === '[' && display
   const closebracket = display === ']' && display
+  console.log('!isNaN(index)', index, !isNaN(index))
   return (
     <div className="row" key={key} style={style}>
       &nbsp;
