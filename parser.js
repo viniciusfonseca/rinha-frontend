@@ -8,12 +8,16 @@ recv = chunk => {
   postMessage(decoder.decode(chunk))
 }
 
-onmessage = event => {
+onmessage = async event => {
   try {
-    wasm_bindgen.parse(event.data)
+    const json = await event.data.text()
+    JSON.parse(json)
+    const buf = await event.data.arrayBuffer()
+    wasm_bindgen.parse(new Uint8Array(buf))
     postMessage(null)
   }
   catch (e) {
+    console.error(e)
     postMessage(e)
   }
 }

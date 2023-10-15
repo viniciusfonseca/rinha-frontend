@@ -180,21 +180,19 @@
       inputLabelEl.style.display = show ? 'none' : 'unset'
     }
 
-    const parseWorker = new Worker('parser.js')
+    let parseWorker = new Worker('parser.js')
     async function handleFileInput() {
-      let start = performance.now()
-      const buf = await inputEl.files[0].arrayBuffer()
-      console.log(`got buffer in ${Math.ceil(performance.now() - start)}ms`)
+      const start = performance.now()
       window.filename = inputEl.files[0].name
       setSpinnerStatus(true)
       setErrMsg(null)
-      start = performance.now()
-      parseWorker.postMessage(new Uint8Array(buf))
+      parseWorker.postMessage(inputEl.files[0])
       window.rows = []
       parseWorker.onmessage = event => {
         if (event.data === null) {
           parseWorker.terminate()
-          console.log('finished streaming json')
+          parseWorker = new Worker('parser.js')
+          console.log(`finished streaming json in ${Math.ceil(performance.now() - start)}ms`)
           setTimeout(() => window.updateStreamingStatus(false), 0)
           return
         }
