@@ -43,7 +43,7 @@ async function handleFileInput() {
       parseWorker.terminate()
       parseWorker = new Worker('parser.js')
       console.log(`finished streaming json in ${Math.ceil(performance.now() - start)}ms`)
-      setTimeout(() => window.updateStreamingStatus(false), 0)
+      setTimeout(() => window.updateStreamingStatus(false), 10)
       return
     }
     if (event.data instanceof Error) {
