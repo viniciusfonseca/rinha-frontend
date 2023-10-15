@@ -172,3 +172,4 @@ dist
 .idea
 
 /json
+.vercel
