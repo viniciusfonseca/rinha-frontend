@@ -7,7 +7,6 @@ function App() {
 
   const [rowCount, setRowCount] = useState(window.rows?.length ?? 0)
   const [streamingStatus, setStreamingStatus] = useState(true)
-  console.log({ rowCount })
 
   useEffect(() => {
     window.updateRowCount = setRowCount
@@ -20,7 +19,7 @@ function App() {
         <h1> { window.filename } </h1>
         {
           streamingStatus &&
-          <p id="status"> Streaming JSON... </p>
+          <p id="status"> Streaming JSON into view... </p>
         }
       </header>
       <div className="list">
