@@ -16,7 +16,7 @@ function App() {
   return (
     <div className="wrapper">
       <header>
-        <h1> { window.filename } </h1>
+        <h1 tabIndex={1}> { window.filename } </h1>
         {
           streamingStatus &&
           <p id="status"> Streaming JSON into view... </p>
@@ -27,6 +27,7 @@ function App() {
         {
           ({ width, height }) =>
             <List
+              tabIndex={1}
               width={width}
               height={height}
               overscanRowCount={10}
@@ -42,6 +43,7 @@ function App() {
 }
 
 function rowRenderer({ index, key, style }) {
+  const tabIndex = index + 1
   let [ field, display, indent ] = window.rows[index].split('\x1F')
   index = parseInt(field) && field
   field = field && (field + ':')
@@ -56,9 +58,9 @@ function rowRenderer({ index, key, style }) {
       }
       {
         !isNaN(index) ?
-          <span className="index"> { index }:&nbsp;</span> :
+          <span className="index" tabIndex={tabIndex}> { index }:&nbsp;</span> :
         field ?
-          <span className="field"> { field }&nbsp;</span> :
+          <span className="field" tabIndex={tabIndex}> { field }&nbsp;</span> :
         null
       }
       {
@@ -66,7 +68,7 @@ function rowRenderer({ index, key, style }) {
           <span className="openbracket"> { openbracket } </span> :
         closebracket ?
           <span className="closebracket"> { closebracket } </span> :
-        <span className="display"> { display } </span>
+        <span className="display" tabIndex={display ? tabIndex : null}> { display } </span>
       }
     </div>
   )
