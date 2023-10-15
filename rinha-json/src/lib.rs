@@ -1,6 +1,18 @@
 use wasm_bindgen::prelude::*;
-// use serde_json::Value;
-use simd_json::{value::borrowed::Value, StaticNode};
+use qjsonrs::{
+    sync::{Stream, TokenIterator},
+    JsonToken::{
+        StartObject,
+        EndObject,
+        StartArray,
+        EndArray,
+        JsKey,
+        JsNumber,
+        JsNull,
+        JsString,
+        JsBoolean
+    },
+};
 
 #[wasm_bindgen]
 extern "C" {
@@ -8,70 +20,85 @@ extern "C" {
 }
 
 #[wasm_bindgen]
-pub fn parse(buf: &mut [u8]) -> Result<(), JsError> {
-    let root = simd_json::to_borrowed_value(buf)?;
+pub fn parse(buf: &[u8]) {
+
+    let mut stream = Stream::from_read(buf).expect("error building json stream");
     let mut result = Vec::<String>::new();
-    mount_rows(&mut result, &root, 0);
+    let mut key = "".to_string();
+    let mut display: String;
+    let mut indent: usize = 0;
+    let mut indentstack = Vec::<u16>::new();
+    indentstack.push(0);
+
+    while let Some(token) = stream.next().expect("error getting stream token") {
+        match token {
+            JsKey(key_) => {
+                key = key_.into();
+            },
+            JsString(x) => {
+                let val: String = x.into();
+                display = format!("\"{}\"", val);
+                push_row(&mut result, &key, &display, indent);
+                indentstack[indent] = indentstack[indent] + 1;
+                key = indentstack[indent].to_string();
+            },
+            JsNumber(x) => {
+                display = x.into();
+                push_row(&mut result, &key, &display, indent);
+                indentstack[indent] = indentstack[indent] + 1;
+                key = indentstack[indent].to_string();
+            },
+            JsBoolean(x) => {
+                display = x.to_string();
+                push_row(&mut result, &key, &display, indent);
+                indentstack[indent] = indentstack[indent] + 1;
+                key = indentstack[indent].to_string();
+            },
+            JsNull => {
+                display = "null".into();
+                push_row(&mut result, &key, &display, indent);
+                indentstack[indent] = indentstack[indent] + 1;
+                key = indentstack[indent].to_string();
+            },
+            StartObject => {
+                display = "".into();
+                if indent > 0 {
+                    push_row(&mut result, &key, &display, indent);
+                    indent = indent + 1;
+                    indentstack.push(0);
+                }
+            },
+            EndObject => {
+                indent = indent - 1;
+                indentstack.pop();
+                if indentstack.get(indent).is_some() {
+                    indentstack[indent] = indentstack[indent] + 1;
+                    key = indentstack[indent].to_string();
+                }
+            },
+            StartArray => {
+                display = "[".into();
+                push_row(&mut result, &key, &display, indent);
+                indent = indent + 1;
+                key = "0".into();
+                indentstack.push(0);
+            },
+            EndArray => {
+                key = "".into();
+                display = "]".into();
+                indent = indent - 1;
+                push_row(&mut result, &key, &display, indent);
+                indentstack.pop();
+                key = indentstack[indent].to_string();
+            },
+        };
+    }
     if result.first().is_some() {
-        recv(&result.join("\x1E").as_bytes())
-    }
-    Ok(())
-}
-
-fn mount_rows(result: &mut Vec<String>, node: &Value, indent: u16) {
-    match node {
-        Value::Array(array) => {
-            for (i, element) in array.iter().enumerate() {
-                push_row(result, &i.to_string(), &get_display(element), indent);
-                match element {
-                    Value::Array(_) => {
-                        mount_rows(result, element, indent + 1);
-                        push_row(result, "", "]", indent);
-                    },
-                    Value::Object(_) => {
-                        mount_rows(result, element, indent + 1);
-                    },
-                    _ => (),
-                };
-            }
-        },
-        Value::Object(object) => {
-            for (key, value) in object.iter() {
-                push_row(result, key, &get_display(value), indent);
-                match value {
-                    Value::Array(_) => {
-                        mount_rows(result, value, indent + 1);
-                        push_row(result, "", "]", indent);
-                    },
-                    Value::Object(_) => {
-                        mount_rows(result, value, indent + 1);
-                    },
-                    _ => (),
-                };
-            }
-        },
-        _ => (),
-    };
-}
-
-fn get_display(value: &Value) -> String {
-    match value {
-        Value::Static(node) => {
-            match node {
-                StaticNode::Null => "null".into(),
-                StaticNode::I64(i) => i.to_string(),
-                StaticNode::U64(u) => u.to_string(),
-                StaticNode::F64(f) => f.to_string(),
-                StaticNode::Bool(b) => b.to_string(),
-            }
-        },
-        Value::String(s) => format!("\"{s}\"").to_string(),
-        Value::Array(_) => "[".into(),
-        Value::Object(_) => "".into(),
+        recv(&result.join("\x1E").as_bytes());
     }
 }
 
-fn push_row(result: &mut Vec<String>, key: &str, display: &str, indent: u16) {
+fn push_row(result: &mut Vec<String>, key: &str, display: &str, indent: usize) {
     let row = format!("{}\x1F{}\x1F{}", key, display, indent);
     result.push(row);
     if result.len() == 100000 {
