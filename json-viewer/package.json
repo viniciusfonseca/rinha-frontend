@@ -2,7 +2,8 @@
   "name": "json-viewer-react",
   "module": "index.ts",
   "scripts": {
-    "build": "bun build index.jsx --minify --outdir dist && cp ./node_modules/react-virtualized/styles.css dist"
+    "build": "bun build index.jsx --minify --outdir dist && cp ./node_modules/react-virtualized/styles.css dist",
+    "dev": "bun build  index.jsx --outdir dist --watch"
   },
   "devDependencies": {
     "@types/react": "^18.2.28",

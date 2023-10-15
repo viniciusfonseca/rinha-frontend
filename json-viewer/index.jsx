@@ -6,15 +6,23 @@ import { createRoot } from 'react-dom/client';
 function App() {
 
   const [rowCount, setRowCount] = useState(window.rows?.length ?? 0)
+  const [streamingStatus, setStreamingStatus] = useState(true)
   console.log({ rowCount })
 
   useEffect(() => {
     window.updateRowCount = setRowCount
-  }, [rowCount])
+    window.updateStreamingStatus = setStreamingStatus
+  }, [rowCount, streamingStatus])
 
   return (
     <div className="wrapper">
-      <h1> { window.filename } </h1>
+      <header>
+        <h1> { window.filename } </h1>
+        {
+          streamingStatus &&
+          <p id="status"> Streaming JSON... </p>
+        }
+      </header>
       <div className="list">
         <AutoSizer>
         {

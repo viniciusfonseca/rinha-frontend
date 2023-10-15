@@ -74,8 +74,6 @@
       width: 100vw;
     }
     .wrapper h1 {
-      max-width: 720px;
-      width: 100%;
       text-align: left;
       margin-block-start: 0.67em;
       margin-block-end: 0.67em;
@@ -115,6 +113,28 @@
       width: 100%;
       height: 100%;
       overflow-y: auto;
+    }
+    header {
+      width: 100%;
+      max-width: 720px;
+      display: flex;
+      align-items: baseline;
+    }
+    #status {
+      display: flex;
+      width: 100%;
+      flex: 1;
+      margin-left: 1em;
+      animation-name: status-blink;
+      animation-duration: 1s;
+      animation-timing-function: linear;
+      animation-iteration-count: infinite;
+    }
+
+    @keyframes status-blink {
+      0% { opacity: 0.25; }
+      50% { opacity: 1; }
+      100% { opacity: 0.25 }
     }
   </style>
 </head>
@@ -175,6 +195,7 @@
         if (event.data === null) {
           parseWorker.terminate()
           console.log('finished streaming json')
+          setTimeout(() => window.updateStreamingStatus(false), 0)
           return
         }
         if (event.data instanceof Error) {
