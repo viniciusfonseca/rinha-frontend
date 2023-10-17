@@ -58,9 +58,9 @@ function rowRenderer({ index, key, style }) {
       }
       {
         !isNaN(index) ?
-          <span className="index" tabIndex={tabIndex} onClick={e => e.target.focus()}> { index }:&nbsp;</span> :
+          <span className="index" tabIndex={tabIndex}> { index }:&nbsp;</span> :
         field ?
-          <span className="field" tabIndex={tabIndex} onClick={e => e.target.focus()}> { field }&nbsp;</span> :
+          <span className="field" tabIndex={tabIndex}> { field }&nbsp;</span> :
         null
       }
       {
@@ -68,7 +68,7 @@ function rowRenderer({ index, key, style }) {
           <span className="openbracket"> { openbracket } </span> :
         closebracket ?
           <span className="closebracket"> { closebracket } </span> :
-        <span className="display" tabIndex={display ? tabIndex : null} onClick={display ? e => e.target.focus() : () => null}> { display } </span>
+        <span className="display" tabIndex={display ? tabIndex : null}> { display } </span>
       }
     </div>
   )

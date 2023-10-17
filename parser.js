@@ -60,7 +60,7 @@ function pushRow(result, key, display, indent) {
   }
   result[0] += `${key}\x1F${display}\x1F${indent}`
   rowCount++
-  if (rowCount === 100_000) {
+  if (rowCount === 5000) {
     postMessage(result[0])
     result[0] = ""
     rowCount = 0
