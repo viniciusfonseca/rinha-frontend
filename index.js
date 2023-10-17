@@ -17,11 +17,11 @@ function handleLabelKey(e) {
 inputLabelEl.addEventListener('keyup', handleLabelKey)
 inputLabelEl.addEventListener('keypress', handleLabelKey)
 
-function setErrMsg(msg) {
+function setErrMsg(msg, detail) {
   if (!msg) { errMsgEl.style.display = 'none' }
   else {
     errMsgEl.style.display = 'unset'
-    errMsgEl.innerText = msg
+    errMsgEl.innerHTML = `${msg}<br>Error detail: ${detail}`
   }
 }
 
@@ -48,7 +48,7 @@ async function handleFileInput() {
     }
     if (event.data instanceof Error) {
       console.error(event.data)
-      setErrMsg('Invalid file. Please load a valid JSON file.')
+      setErrMsg('Invalid file. Please load a valid JSON file.', event.data.message)
       setSpinnerStatus(false)
       return
     }
