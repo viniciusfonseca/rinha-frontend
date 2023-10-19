@@ -30,7 +30,7 @@ function setSpinnerStatus(show) {
   inputLabelEl.style.display = show ? 'none' : 'unset'
 }
 
-let parseWorker = new Worker('parser.js')
+let parseWorker = new Worker('worker/index.min.js')
 async function handleFileInput() {
   const start = performance.now()
   window.filename = inputEl.files[0].name
@@ -41,7 +41,7 @@ async function handleFileInput() {
   parseWorker.onmessage = event => {
     if (event.data === null) {
       parseWorker.terminate()
-      parseWorker = new Worker('parser.js')
+      parseWorker = new Worker('worker/index.min.js')
       console.log(`finished streaming json in ${Math.ceil(performance.now() - start)}ms`)
       setTimeout(() => window.updateStreamingStatus(false), 10)
       return
@@ -54,7 +54,7 @@ async function handleFileInput() {
     }
     let shouldRenderViewer = false
     if (rows.length === 0) {
-      console.log(`finished parsing json in ${performance.now() - start}ms`)
+      console.log(`first stream emitted in ${performance.now() - start}ms`)
       shouldRenderViewer = true
     }
     window.rows.push(...event.data.split('\x1E'))

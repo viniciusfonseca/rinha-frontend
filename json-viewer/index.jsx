@@ -16,7 +16,7 @@ function App() {
   return (
     <div className="wrapper">
       <header>
-        <h1 tabIndex={1}> { window.filename } </h1>
+        <h1 id="filename" tabIndex={1}> { window.filename } </h1>
         {
           streamingStatus &&
           <p id="status"> Streaming JSON into view... </p>
