@@ -49,6 +49,7 @@ async function handleFileInput() {
     if (event.data instanceof Error) {
       console.error(event.data)
       setErrMsg('Invalid file. Please load a valid JSON file.', event.data.message)
+      setTimeout(() => window.updateStreamingStatus(false), 10)
       setSpinnerStatus(false)
       return
     }

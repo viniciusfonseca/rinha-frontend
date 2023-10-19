@@ -204,22 +204,20 @@ export class TokenParser {
       }
 
       throw new TokenParserError(
-        `Unexpected ${TokenType[token]} (${JSON.stringify(
-          value,
-        )}) in state ${TokenParserStateToString(this.state)}`,
+        `Unexpected ${TokenType[token]} (${JSON.stringify(value)}) in state ${TokenParserStateToString(this.state)}`,
       );
     } catch (err) {
-      this.close()
       console.error(err)
+      this.close(err)
     }
   }
 
-  pushRow(emptyKey = false) {
+  pushRow(emptyKey = false, errMsg) {
     if (this.rowCount > 0) {
         this.buf += '\x1E'
         this.batchSize = 10000
     }
-    this.buf += `${emptyKey ? "" : this.key}\x1F${this.display}\x1F${this.indent}`
+    this.buf += `${emptyKey ? "" : this.key}\x1F${this.display}\x1F${errMsg || Math.max(0, this.indent)}`
     this.rowCount++
     if (this.rowCount === this.batchSize) {
       postMessage(this.buf)
@@ -247,9 +245,21 @@ export class TokenParser {
       this.mode !== undefined ? TokenParserState.COMMA : TokenParserState.VALUE;
   }
 
-  close() {
+  close(err) {
+    if (
+      (this.state !== TokenParserState.VALUE &&
+        this.state !== TokenParserState.SEPARATOR) ||
+      this.stack.length > 0
+    ) {
+      err = new Error(
+        `Parser ended while parsing "${TokenParserStateToString(this.state)}".`,
+      )
+    }
+    if (err) {
+      this.pushRow(false, err.message)
+    }
     postMessage(this.buf)
-    postMessage(null)
+    postMessage(err || null)
   }
 }
 

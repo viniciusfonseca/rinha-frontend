@@ -44,10 +44,15 @@ function App() {
 
 function rowRenderer({ index, key, style }) {
   const tabIndex = index + 1
-  let [ field, display, indent ] = window.rows[index].split('\x1F')
+  let [ field, display, _indent ] = window.rows[index].split('\x1F')
+  let indent = +_indent
+  if (isNaN(indent)) {
+    return (
+      <div className="error" key={key} style={style}>{_indent}</div>
+    )
+  }
   index = parseInt(field) && field
   field = field && (field + ':')
-  indent = +indent
   const openbracket = display === '[' && display
   const closebracket = display === ']' && display
   return (
