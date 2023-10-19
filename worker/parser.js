@@ -252,7 +252,7 @@ export class TokenParser {
       this.stack.length > 0
     ) {
       err = new Error(
-        `Parser ended while parsing "${TokenParserStateToString(this.state)}".`,
+        `Parse error: Encountered EOF while parsing "${TokenParserStateToString(this.state)}".`,
       )
     }
     if (err) {

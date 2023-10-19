@@ -48,7 +48,7 @@ function rowRenderer({ index, key, style }) {
   let indent = +_indent
   if (isNaN(indent)) {
     return (
-      <div className="error" key={key} style={style}>{_indent}</div>
+      <div className="error" tabIndex={tabIndex} key={key} style={style}>&nbsp;{_indent}</div>
     )
   }
   index = parseInt(field) && field
