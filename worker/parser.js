@@ -217,7 +217,7 @@ export class TokenParser {
         this.buf += '\x1E'
         this.batchSize = 10000
     }
-    this.buf += `${emptyKey ? "" : this.key}\x1F${this.display}\x1F${errMsg || Math.max(0, this.indent)}`
+    this.buf += `${emptyKey ? "" : (this.key ?? "")}\x1F${this.display}\x1F${errMsg || Math.max(0, this.indent)}`
     this.rowCount++
     if (this.rowCount === this.batchSize) {
       postMessage(this.buf)
