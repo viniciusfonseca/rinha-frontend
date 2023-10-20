@@ -2,8 +2,9 @@ import { AutoSizer } from 'react-virtualized/dist/commonjs/AutoSizer';
 import { List } from 'react-virtualized/dist/commonjs/List';
 import { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
+import { block } from 'million/react';
 
-function App() {
+const App = () => {
 
   const [rowCount, setRowCount] = useState(window.rows?.length ?? 0)
   const [streamingStatus, setStreamingStatus] = useState(true)
@@ -18,8 +19,7 @@ function App() {
       <header>
         <h1 id="filename" tabIndex={1}> { window.filename } </h1>
         {
-          streamingStatus &&
-          <p id="status"> Streaming JSON into view... </p>
+          <p id="status" style={{ display: streamingStatus ? 'block' : 'hidden' }}> Streaming JSON into view... </p>
         }
       </header>
       <div className="list">
@@ -33,7 +33,7 @@ function App() {
               overscanRowCount={10}
               rowCount={rowCount}
               rowHeight={28}
-              rowRenderer={rowRenderer}
+              rowRenderer={props => <Row {...props} />}
             />
         }
         </AutoSizer>
@@ -42,20 +42,16 @@ function App() {
   )
 }
 
-function rowRenderer({ index, key, style }) {
+const Row = block(({ index, key, style }) => {
   const tabIndex = index + 1
   let [ field, display, _indent ] = window.rows[index].split('\x1F')
   let indent = +_indent
-  if (isNaN(indent)) {
-    return (
-      <div className="error" key={key} style={style}>{_indent}</div>
-    )
-  }
   index = parseInt(field) && field
   field = field && (field + ':')
   const openbracket = display === '[' && display
   const closebracket = display === ']' && display
   return (
+    isNaN(indent) ? <div className="error" key={key} style={style}>{_indent}</div> :
     <div className="row" key={key} style={style}>
       &nbsp;
       {
@@ -77,7 +73,7 @@ function rowRenderer({ index, key, style }) {
       }
     </div>
   )
-}
+})
 
 window.mountJSONViewer = elementId => {
   createRoot(document.getElementById(elementId))
