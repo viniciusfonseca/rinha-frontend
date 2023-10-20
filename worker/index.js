@@ -23,6 +23,7 @@ onmessage = event => {
       },
       close() {
         tokenParser.close()
+        postMessage(null)
       }
     }))
   }

@@ -19,7 +19,8 @@ const App = () => {
       <header>
         <h1 id="filename" tabIndex={1}> { window.filename } </h1>
         {
-          <p id="status" style={{ display: streamingStatus ? 'block' : 'hidden' }}> Streaming JSON into view... </p>
+          streamingStatus &&
+          <p id="status"> Streaming JSON into view... </p>
         }
       </header>
       <div className="list">
