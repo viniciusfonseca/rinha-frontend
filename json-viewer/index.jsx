@@ -51,6 +51,7 @@ const Row = block(({ index, key, style }) => {
   field = field && (field + ':')
   const openbracket = display === '[' && display
   const closebracket = display === ']' && display
+  style.width = 'auto'
   return (
     isNaN(indent) ? <div className="error" key={key} style={style}>{_indent}</div> :
     <div className="row" key={key} style={style}>
