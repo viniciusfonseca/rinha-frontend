@@ -33,7 +33,7 @@ const App = () => {
               overscanRowCount={10}
               rowCount={rowCount}
               rowHeight={28}
-              rowRenderer={props => <Row {...props} />}
+              rowRenderer={Row}
             />
         }
         </AutoSizer>
