@@ -518,3 +518,11 @@ function TokenizerStateToString(tokenizerState) {
     "SEPARATOR",
   ][tokenizerState];
 }
+
+class TokenizerError extends Error {
+  constructor(message) {
+    super(message);
+    // Typescript is broken. This is a workaround
+    Object.setPrototypeOf(this, TokenizerError.prototype);
+  }
+}
