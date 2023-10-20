@@ -60,13 +60,21 @@ export class TokenParser {
 
   batchSize = 50
 
-  buf = ""
+  buf = new Uint8Array(1024 * 10000)
+  bufCursor = 0
+
+  encoder = new TextEncoder()
+
+  leftSquaredBracket = this.encoder.encode('[')
+  rightSquaredBracket = this.encoder.encode(']')
 
   /**
    * 
-   * @param {{ token: TokenType, value: string | number | boolean | null }} param0 
+   * @param {TokenType} token 
+   * @param {string | number | boolean | null} value 
+   * @returns 
    */
-  write({ token, value }) {
+  write(token, value, len) {
     try {
       if (this.state === TokenParserState.VALUE) {
         if (
@@ -76,16 +84,15 @@ export class TokenParser {
           token === TokenType.FALSE ||
           token === TokenType.NULL
         ) {
+
           if (this.mode === TokenParserMode.OBJECT) {
-            this.value[this.key] = value;
-            this.state = TokenParserState.COMMA;
-            this.display = getDisplay(value)
-            this.pushRow()
+            this.value[this.key] = value
+            this.state = TokenParserState.COMMA
+            this.writeValue(value, len)
           } else if (this.mode === TokenParserMode.ARRAY) {
-            this.value.push(value);
-            this.state = TokenParserState.COMMA;
-            this.display = getDisplay(value)
-            this.pushRow()
+            this.value.push(value)
+            this.state = TokenParserState.COMMA
+            this.writeValue(value, len)
           }
           return;
         }
@@ -104,8 +111,7 @@ export class TokenParser {
             this.value = {};
           }
           if (this.indent > 0) {
-            this.display = ''
-            this.pushRow()
+            this.writeValue(null, 0)
             this.indent++
           }
           this.mode = TokenParserMode.OBJECT;
@@ -127,8 +133,7 @@ export class TokenParser {
           }
           this.mode = TokenParserMode.ARRAY;
           this.state = TokenParserState.VALUE;
-          this.display = '['
-          this.pushRow()
+          this.writeValue(this.leftSquaredBracket, 1)
           this.indent++
           this.key = 0;
           return;
@@ -141,7 +146,8 @@ export class TokenParser {
         ) {
           this.display = ']'
           this.indent--
-          this.pushRow(true)
+          this.writeKey(null, 0)
+          this.writeValue(this.rightSquaredBracket, 1)
           this.pop();
           return;
         }
@@ -176,7 +182,7 @@ export class TokenParser {
         if (token === TokenType.COMMA) {
           if (this.mode === TokenParserMode.ARRAY) {
             this.state = TokenParserState.VALUE;
-            this.key += 1;
+            this.key++;
             return;
           }
 
@@ -194,9 +200,9 @@ export class TokenParser {
             this.mode === TokenParserMode.ARRAY)
         ) {
           this.indent--
-          if (value === ']') {
-            this.display = value
-            this.pushRow(true)
+          if (token === TokenType.RIGHT_BRACKET) {
+            this.writeKey(null, 0)
+            this.writeValue(this.rightSquaredBracket, 1)
           }
           this.pop();
           return;
@@ -210,6 +216,65 @@ export class TokenParser {
       console.error(err)
       this.close(err)
     }
+  }
+
+  encodedIntCache = new Map()
+
+  /**
+   * 
+   * @param {number} int 
+   * @returns {Uint8Array}
+   */
+  getEncodedInt(int) {
+    const cached = this.encodedIntCache.get(int)
+    if (!cached) {
+      const newEncodedIndent = this.encoder.encode(this.indent.toString())
+      this.encodedIntCache.set(int, newEncodedIndent)
+      return newEncodedIndent
+    }
+    return cached
+  }
+
+  /**
+   * 
+   * @param {number} char 
+   */
+  writeChar(char) {
+    this.buf[this.bufCursor++] = char
+  }
+
+  /**
+   * 
+   * @param {Uint8Array} value 
+   */
+  writeValue(value, len) {
+    const numericKey = +this.key
+    if (numericKey) {
+      const key = this.getEncodedInt(numericKey)
+      this.writeKey(key, key.length)
+    }
+    if (len) {
+      this.buf.set(value.subarray(0, len), this.bufCursor)
+      this.bufCursor += len
+    }
+    this.buf[this.bufCursor++] = 0x1F
+    const indent = this.getEncodedInt(this.indent)
+    this.buf.set(indent, this.bufCursor)
+    this.bufCursor += indent.length
+    this.buf[this.bufCursor++] = 0x1E
+    this.rowCount++
+  }
+
+  /**
+   * 
+   * @param {Uint8Array} value 
+   */
+  writeKey(key, len) {
+    if (len) {
+      this.buf.set(key.subarray(0, len), this.bufCursor)
+      this.bufCursor += len
+    }
+    this.buf[this.bufCursor++] = 0x1F
   }
 
   pushRow(emptyKey = false, errMsg) {

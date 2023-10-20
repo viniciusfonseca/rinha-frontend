@@ -41,6 +41,8 @@ export class Tokenizer {
   bufferedString = new Uint8Array(2097152)
   bufferedNumber = new Uint8Array(32)
   charSplitBuffer = new Uint8Array(4)
+  trueBytes = new TextEncoder().encode("true")
+  falseBytes = new TextEncoder().encode("false")
   cursorBufferStr = 0
   cursorBufferNum = 0
   bytes_remaining = 0
@@ -72,27 +74,27 @@ export class Tokenizer {
             continue
           }
           if (n === charset.LEFT_CURLY_BRACKET) {
-            this.onToken(TokenType.LEFT_BRACE)
+            this.onToken(TokenType.LEFT_BRACE, n)
             continue
           }
           if (n === charset.RIGHT_CURLY_BRACKET) {
-            this.onToken(TokenType.RIGHT_BRACE)
+            this.onToken(TokenType.RIGHT_BRACE, n)
             continue
           }
           if (n === charset.LEFT_SQUARE_BRACKET) {
-            this.onToken(TokenType.LEFT_BRACKET)
+            this.onToken(TokenType.LEFT_BRACKET, n)
             continue
           }
           if (n === charset.RIGHT_SQUARE_BRACKET) {
-            this.onToken(TokenType.RIGHT_BRACKET)
+            this.onToken(TokenType.RIGHT_BRACKET, n)
             continue
           }
           if (n === charset.COLON) {
-            this.onToken(TokenType.COLON)
+            this.onToken(TokenType.COLON, n)
             continue
           }
           if (n === charset.COMMA) {
-            this.onToken(TokenType.COMMA)
+            this.onToken(TokenType.COMMA, n)
             continue
           }
           if (n === charset.LATIN_SMALL_LETTER_T) {
@@ -109,7 +111,8 @@ export class Tokenizer {
           }
           if (n === charset.QUOTATION_MARK) {
             this.cursorBufferStr = 0
-            this.state = TokenizerStates.STRING_DEFAULT;
+            this.state = TokenizerStates.STRING_DEFAULT
+            this.bufferedString[this.cursorBufferStr++] = n
             continue
           }
           if (n >= charset.DIGIT_ONE && n <= charset.DIGIT_NINE) {
@@ -133,7 +136,8 @@ export class Tokenizer {
           break
         case TokenizerStates.STRING_DEFAULT:
           if (n === charset.QUOTATION_MARK) {
-            this.onToken(TokenType.STRING, this.bufferedString)
+            this.bufferedString[this.cursorBufferStr++] = n
+            this.onToken(TokenType.STRING, this.bufferedString, this.cursorBufferStr)
             continue
           }
           if (n === charset.REVERSE_SOLIDUS) {
@@ -221,7 +225,7 @@ export class Tokenizer {
                 //<55296,56319> - highSurrogate
                 this.highSurrogate = intVal
               } else {
-                this.bufferedString.appendBuf(
+                this.appendBuf(
                   this.encoder.encode(String.fromCharCode(intVal)),
                 );
               }
@@ -371,7 +375,7 @@ export class Tokenizer {
         case TokenizerStates.TRUE3:
           if (n === charset.LATIN_SMALL_LETTER_E) {
             this.state = TokenizerStates.START
-            this.onToken(TokenType.TRUE, true)
+            this.onToken(TokenType.TRUE, this.trueBytes, 4)
             continue
           }
           break
@@ -396,7 +400,7 @@ export class Tokenizer {
         case TokenizerStates.FALSE4:
           if (n === charset.LATIN_SMALL_LETTER_E) {
             this.state = TokenizerStates.START
-            this.onToken(TokenType.FALSE, false)
+            this.onToken(TokenType.FALSE, this.falseBytes, 5)
             continue
           }
           break
@@ -429,13 +433,13 @@ export class Tokenizer {
             // whitespace
             continue;
           }
-        throw new TokenizerError(
+        this.error(new TokenizerError(
           `Unexpected "${String.fromCharCode(
             n,
           )}" at position "${i}" in state ${TokenizerStateToString(
             this.state,
           )}`,
-        )
+        ))
       }
     }
 
@@ -464,8 +468,16 @@ export class Tokenizer {
               this.state,
             )}). Either not all the data was received or the data was invalid.`,
           ),
-        );
+        )
     }
+  }
+
+  error(err) {
+    if (this.state !== TokenizerStates.ENDED) {
+      this.state = TokenizerStates.ERROR;
+    }
+
+    this.onError(err)
   }
 
   /**
