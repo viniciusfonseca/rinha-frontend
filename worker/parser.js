@@ -103,7 +103,7 @@ export class TokenParser {
           else {
             this.value = {};
           }
-          if (this.key) {
+          if (this.key !== undefined) {
             this.display = ''
             this.pushRow()
             this.indent++
