@@ -49,7 +49,7 @@ const App = () => {
       </div>
       {
         !streamingStatus && truncate &&
-        <div style={{ borderTop: '1x solid #A0A0A0' }}>
+        <div className="truncate-warn">
           <p> This JSON file is too big and its view was truncated. </p>
           <button className="btn" style={{ marginBottom: '1em' }} type="button" onClick={() => { setTruncate(false) }}> Show entire JSON </button>
         </div>
