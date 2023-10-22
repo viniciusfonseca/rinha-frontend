@@ -39,7 +39,7 @@ const App = () => {
               tabIndex={1}
               width={width}
               height={height}
-              overscanRowCount={10}
+              overscanRowCount={15}
               rowCount={truncate ? Math.min(599182, rowCount) : rowCount}
               rowHeight={28}
               rowRenderer={Row}

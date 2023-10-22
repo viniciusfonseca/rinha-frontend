@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 (cd json-viewer; bun i; bun run build)
+(cd worker; bun i; bun run build)
 
 rm -rf dist
 mkdir dist
