@@ -26,10 +26,6 @@ const App = () => {
     <div className="wrapper">
       <header>
         <h1 id="filename" tabIndex={1}> { window.filename } </h1>
-        {
-          streamingStatus &&
-          <p id="status"> Streaming JSON into view... ({progress}) </p>
-        }
       </header>
       <div className="list">
         <AutoSizer>
@@ -48,11 +44,15 @@ const App = () => {
         </AutoSizer>
       </div>
       {
-        !streamingStatus && truncate &&
-        <div className="truncate-warn">
-          <p> This JSON file is too big and its view was truncated. </p>
-          <button className="btn" style={{ marginBottom: '1em' }} type="button" onClick={() => { setTruncate(false) }}> Show entire JSON </button>
-        </div>
+        streamingStatus ?
+          <footer>
+            <p id="status"> Reading file... ({progress}) </p>
+          </footer> :
+          truncate &&
+            <footer>
+              <p> This JSON file is too big and its view was truncated. </p>
+              <button className="btn" style={{ marginBottom: '1em' }} type="button" onClick={() => { setTruncate(false) }}> Show entire JSON </button>
+            </footer>
       }
     </div>
   )

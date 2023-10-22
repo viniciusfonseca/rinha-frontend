@@ -49,6 +49,7 @@
     #subtitle {
       font-size: 1.25em;
       text-align: center;
+      padding: 0 .67em;
     }
 
     #errmsg {
@@ -72,6 +73,9 @@
       align-items: center;
       height: 100vh;
       width: 100vw;
+      padding: 0 .67em;
+      box-sizing: border-box;
+      overflow: hidden;
     }
     .wrapper h1 {
       text-align: left;
@@ -128,10 +132,10 @@
       overflow-x: auto !important;
       padding-bottom: 14px;
     }
-    .truncate-warn {
+    footer {
       width: 100%;
       max-width: 720px;
-      border-top: 1px solid #A0A0A0;
+      border-top: 1px solid #BFBFBF;
       margin-top: 1em;
     }
     header {
@@ -144,7 +148,6 @@
       display: flex;
       width: 100%;
       flex: 1;
-      margin-left: 1em;
       animation-name: status-blink;
       animation-duration: 1s;
       animation-timing-function: linear;
