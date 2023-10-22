@@ -20,6 +20,7 @@ onmessage = event => {
     stream.pipeTo(new WritableStream({
       write(chunk) {
         tokenizer.write(chunk)
+        postMessage(chunk.byteLength)
       },
       close() {
         tokenParser.close()

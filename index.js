@@ -30,15 +30,25 @@ function setSpinnerStatus(show) {
   inputLabelEl.style.display = show ? 'none' : 'unset'
 }
 
+const MAX_CHUNK_SIZE = 2097152
+window.bytesProcessed = 0
+window.filesize = 1
 let parseWorker = new Worker('worker/index.min.js')
 async function handleFileInput() {
   const start = performance.now()
   window.filename = inputEl.files[0].name
+  window.filesize = inputEl.files[0].size
   setSpinnerStatus(true)
   setErrMsg(null)
   parseWorker.postMessage(inputEl.files[0])
   window.rows = []
+  window.collapsed = []
+  window.bytesProcessed = 0
   parseWorker.onmessage = event => {
+    if (typeof event.data === "number") {
+      window.bytesProcessed += event.data
+      return
+    }
     if (event.data === null) {
       parseWorker.terminate()
       parseWorker = new Worker('worker/index.min.js')
@@ -58,7 +68,10 @@ async function handleFileInput() {
       console.log(`first stream emitted in ${performance.now() - start}ms`)
       shouldRenderViewer = true
     }
-    window.rows.push(...event.data.split('\x1E'))
+    // let startIdx = window.rows.length
+    const chunk = event.data.split('\x1E')
+    window.rows.push(...chunk)
+    window.collapsed.push(...Array(chunk.length).fill(null))
     if (shouldRenderViewer) {
       setSpinnerStatus(false)
       homeEl.parentNode.removeChild(homeEl)
