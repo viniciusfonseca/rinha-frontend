@@ -1,6 +1,6 @@
 import { AutoSizer } from 'react-virtualized/dist/commonjs/AutoSizer';
 import { List } from 'react-virtualized/dist/commonjs/List';
-import { useEffect, useReducer, useState } from 'react';
+import { Fragment, useEffect, useReducer, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { block } from 'million/react';
 
@@ -96,7 +96,6 @@ const Row = block(({ index, key, style }) => {
   let [ field, display, _indent ] = window.rows[index].split('\x1F')
   let indent = +_indent
   index = parseInt(field) && field
-  field = field && (field + ':')
   const openbracket = display === '[' && display
   const closebracket = display === ']' && display
   style.width = 'auto'
@@ -115,19 +114,28 @@ const Row = block(({ index, key, style }) => {
       }
       {
         !isNaN(index) ?
-          <span className="index" tabIndex={tabIndex}> { index }:&nbsp;</span> :
+          <span className="index">
+            <span tabIndex={tabIndex}> { index }</span>:&nbsp;
+          </span> :
         field ?
-          <span className="field" tabIndex={tabIndex}> { field }&nbsp;</span> :
+          <div className="field">
+            <span tabIndex={tabIndex}> { field }</span>:&nbsp;
+          </div> :
         null
       }
       {
         openbracket ?
-          <span className="openbracket"> { openbracket }&nbsp;</span> :
+          <span className="openbracket"> { openbracket }</span> :
         closebracket ?
           <span className="closebracket"> { closebracket } </span> :
         <span className="display" tabIndex={display ? tabIndex : null}> { display } </span>
       }
-      { collapseButton }
+      {
+        collapseButton &&
+        <Fragment>
+          &nbsp;{ collapseButton }
+        </Fragment>
+      }
     </div>
   )
 })
