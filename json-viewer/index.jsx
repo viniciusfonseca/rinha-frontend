@@ -22,6 +22,14 @@ const App = () => {
 
   const progress = `${Math.floor(window.bytesProcessed * 100 / window.filesize)}%`
 
+  function disableTruncate() {
+    const list = document.getElementsByClassName('ReactVirtualized__List')[0]
+    list.scrollTop = 0
+    setTimeout(() => {
+      setTruncate(false)
+    })
+  }
+
   return (
     <div className="wrapper">
       <header>
@@ -51,7 +59,12 @@ const App = () => {
           truncate &&
             <footer>
               <p> This JSON file is too big and its view was truncated. </p>
-              <button className="btn" style={{ marginBottom: '1em' }} type="button" onClick={() => { setTruncate(false) }}> Show entire JSON </button>
+              <button className="btn"
+                style={{ marginBottom: '1em' }}
+                type="button"
+                onClick={disableTruncate}>
+                  Show entire JSON
+              </button>
             </footer>
       }
     </div>
@@ -114,7 +127,7 @@ const Row = block(({ index, key, style }) => {
           <span className="closebracket"> { closebracket } </span> :
         <span className="display" tabIndex={display ? tabIndex : null}> { display } </span>
       }
-      {/* { collapseButton } */}
+      { collapseButton }
     </div>
   )
 })

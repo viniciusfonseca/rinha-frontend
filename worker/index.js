@@ -1,17 +1,7 @@
-import { Tokenizer } from '@streamparser/json'
-import { TokenParser } from './parser'
+import { Tokenizer } from './tokenizer'
 
 const MAX_CHUNK_SIZE = 2097152
 const tokenizer = new Tokenizer()
-const tokenParser = new TokenParser()
-tokenizer.onToken = tokenInfo => {
-  try {
-    tokenParser.write(tokenInfo)
-  }
-  catch (e) {
-    console.error(e)
-  }
-}
 
 onmessage = async event => {
   try {
@@ -28,7 +18,7 @@ onmessage = async event => {
         postMessage(chunk.byteLength)
       },
       close() {
-        tokenParser.close()
+        tokenizer.end()
         postMessage(null)
       }
     })

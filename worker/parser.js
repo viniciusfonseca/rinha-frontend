@@ -64,9 +64,11 @@ export class TokenParser {
 
   /**
    * 
-   * @param {{ token: TokenType, value: string | number | boolean | null }} param0 
+   * @param {TokenType} token 
+   * @param {string | number | boolean | null | undefined} value 
+   * @returns 
    */
-  write({ token, value }) {
+  write(token, value) {
     try {
       if (this.state === TokenParserState.VALUE) {
         if (
@@ -194,8 +196,8 @@ export class TokenParser {
             this.mode === TokenParserMode.ARRAY)
         ) {
           this.indent--
-          if (value === ']') {
-            this.display = value
+          if (token === TokenType.RIGHT_BRACKET) {
+            this.display = ']'
             this.pushRow(true)
           }
           this.pop();
@@ -204,7 +206,7 @@ export class TokenParser {
       }
 
       throw new TokenParserError(
-        `Unexpected ${TokenType[token]} (${JSON.stringify(value)}) in state ${TokenParserStateToString(this.state)}`,
+        `Unexpected ${TokenType[token]} (${value ? JSON.stringify(value) : ""}) in state ${TokenParserStateToString(this.state)}`,
       );
     } catch (err) {
       console.error(err)
@@ -270,8 +272,8 @@ export class TokenParser {
  */
 function getDisplay(value) {
   if (value === null) { return "null" }
-  if (typeof value === "string") { return `"${value}"` }
-  return value.toString()
+  if (value || value === false) { return value.toString() }
+  return ']'
 }
 
 function TokenParserStateToString(state) {
