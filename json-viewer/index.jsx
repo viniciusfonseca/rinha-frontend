@@ -102,8 +102,8 @@ const Row = block(({ index, key, style }) => {
   const collapsible = Boolean(!isNaN(index) || field) && (!Boolean(display) || Boolean(openbracket))
   const collapseButton = collapsible ? (
     window.collapsed[index] ?
-      <span className="collapse plus" tabIndex={tabIndex} onClick={expand}>... + </span> :
-      <span className="collapse minus" tabIndex={tabIndex} onClick={collapse}> - </span>
+      <span className="collapse plus" aria-label="expand section" tabIndex={tabIndex} onClick={expand}>... + </span> :
+      <span className="collapse minus" aria-label="collapse section" tabIndex={tabIndex} onClick={collapse}> - </span>
   ) : null
   return (
     isNaN(indent) ? <div className="error" key={key} style={style}>{_indent}</div> :
@@ -115,11 +115,11 @@ const Row = block(({ index, key, style }) => {
       {
         !isNaN(index) ?
           <span className="index">
-            <span tabIndex={tabIndex}> { index }</span>:&nbsp;
+            <span tabIndex={tabIndex} aria-labelledby={`index-${index}`}> { index }</span>:&nbsp;
           </span> :
         field ?
           <div className="field">
-            <span tabIndex={tabIndex}> { field }</span>:&nbsp;
+            <span tabIndex={tabIndex} aria-labelledby={`field-${field}`}> { field }</span>:&nbsp;
           </div> :
         null
       }
