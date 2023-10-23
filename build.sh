@@ -5,6 +5,8 @@
 
 rm -rf dist
 mkdir dist
-cp ./{index.html,index.js,parser.js,spinner.gif} dist
+cp ./{index.html,index.js,spinner.gif} dist
 mkdir -p dist/json-viewer/dist
 cp json-viewer/dist/* dist/json-viewer/dist
+mkdir -p dist/worker
+cp worker/index.min.js dist/worker/index.min.js
