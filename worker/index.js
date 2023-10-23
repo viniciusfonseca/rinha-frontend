@@ -15,14 +15,14 @@ tokenizer.onToken = tokenInfo => {
 
 onmessage = async event => {
   try {
-    /** @type {ReadableStream<Uint8Array>} */
-    const stream = event.data.stream()
-
     if (event.data.size <= MAX_CHUNK_SIZE) {
       JSON.parse(await event.data.text())
     }
 
-    stream.pipeTo(new WritableStream({
+    /** @type {ReadableStream<Uint8Array>} */
+    const stream = event.data.stream()
+
+    const destStream = new WritableStream({
       write(chunk) {
         tokenizer.write(chunk)
         postMessage(chunk.byteLength)
@@ -31,7 +31,8 @@ onmessage = async event => {
         tokenParser.close()
         postMessage(null)
       }
-    }))
+    })
+    stream.pipeTo(destStream)
   }
   catch (e) {
     console.error(e)
