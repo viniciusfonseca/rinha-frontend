@@ -8,7 +8,7 @@ const homeEl = document.getElementById('home')
 const jsonViewerEl = document.getElementById('json-viewer')
 
 function handleLabelKey(e) {
-  if(e.which === 32 || e.which === 13){
+  if (e.which === 32 || e.which === 13){
     e.preventDefault();
     inputEl.click();
   }
@@ -41,9 +41,10 @@ async function handleFileInput() {
   setSpinnerStatus(true)
   setErrMsg(null)
   parseWorker.postMessage(inputEl.files[0])
-  window.rows = []
+  window.view = []
   window.collapsed = []
   window.bytesProcessed = 0
+  let lastUpdatedRowId = 0
   parseWorker.onmessage = event => {
     if (typeof event.data === "number") {
       window.bytesProcessed += event.data
@@ -64,21 +65,41 @@ async function handleFileInput() {
       return
     }
     let shouldRenderViewer = false
-    if (rows.length === 0) {
+    if (window.view.length === 0) {
       console.log(`first stream emitted in ${performance.now() - start}ms`)
       shouldRenderViewer = true
     }
-    // let startIdx = window.rows.length
+    if (typeof event.data === "object" && !Array.isArray(event.data)) {
+      if (event.data.type === "updateNode") {
+        for (let i = lastUpdatedRowId; i < window.view; i++) {
+          const index = readRowIndex(window.view[i])
+          if (index === event.data.rowIndex) {
+            const data = window.view[i].split('\x1F')
+            data[4] = event.data.nodeId
+            window.view[i] = data.join('\x1F')
+            lastUpdatedRowId = i
+            break
+          }
+        }
+      }
+    }
+    // let startIdx = window.view.length
     const chunk = event.data.split('\x1E')
-    window.rows.push(...chunk)
-    window.collapsed.push(...Array(chunk.length).fill(null))
+    window.view.push(...chunk)
     if (shouldRenderViewer) {
       setSpinnerStatus(false)
       homeEl.parentNode.removeChild(homeEl)
       window.mountJSONViewer('json-viewer')
     }
     else {
-      window.updateRowCount(window.rows.length)
+      window.updateRowCount(window.view.length)
     }
   }
+}
+
+function readRowIndex(input) {
+  let res = ""
+  let i = 0
+  while (input[i] && ('0' <= input[i] && input[i] <= '9')) { res += input[i]; i++ }
+  return +res
 }

@@ -62,6 +62,14 @@ export class TokenParser {
 
   buf = ""
 
+  counter = 0
+
+  nodeCounter = 0
+
+  nodeStack = []
+
+  lastSentRowId = 0
+
   /**
    * 
    * @param {TokenType} token 
@@ -107,7 +115,8 @@ export class TokenParser {
           }
           if (this.key !== undefined) {
             this.display = ''
-            this.pushRow()
+            this.nodeStack.push([this.nodeCounter, this.rowCount])
+            this.pushRow(false, null, this.nodeCounter++)
             this.indent++
           }
           this.mode = TokenParserMode.OBJECT;
@@ -130,9 +139,10 @@ export class TokenParser {
           this.mode = TokenParserMode.ARRAY;
           this.state = TokenParserState.VALUE;
           this.display = '['
-          this.pushRow()
+          this.pushRow(false, null, this.nodeCounter)
           this.indent++
           this.key = 0;
+          this.nodeStack.push(this.nodeCounter++)
           return;
         }
 
@@ -143,7 +153,7 @@ export class TokenParser {
         ) {
           this.display = ']'
           this.indent--
-          this.pushRow(true)
+          this.pushRow(true, null, this.nodeStack.pop())
           this.pop();
           return;
         }
@@ -214,17 +224,25 @@ export class TokenParser {
     }
   }
 
-  pushRow(emptyKey = false, errMsg) {
+  pushRow(emptyKey = false, errMsg, nodeId) {
     if (this.rowCount > 0) {
         this.buf += '\x1E'
         this.batchSize = 10000
     }
-    this.buf += `${emptyKey ? "" : (this.key ?? "")}\x1F${this.display}\x1F${errMsg || Math.max(0, this.indent)}`
+    this.buf += `${this.counter++}\x1F${emptyKey ? "" : (this.key ?? "")}\x1F${this.display}\x1F${errMsg || Math.max(0, this.indent)}\x1F${nodeId ?? ""}`
     this.rowCount++
     if (this.rowCount === this.batchSize) {
+      this.lastSentRowId = this.rowCount
       postMessage(this.buf)
       this.buf = ""
       this.rowCount = 0
+    }
+  }
+
+  sendUpdate(rowIndex, nodeId) {
+    if (rowIndex <= this.lastSentRowId) {
+      postMessage({ type: 'updateNode', rowIndex, nodeId })
+      return
     }
   }
 

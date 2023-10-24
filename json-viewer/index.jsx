@@ -1,6 +1,6 @@
 import { AutoSizer } from 'react-virtualized/dist/commonjs/AutoSizer';
 import { List } from 'react-virtualized/dist/commonjs/List';
-import { Fragment, useEffect, useReducer, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { block } from 'million/react';
 
@@ -8,7 +8,7 @@ const TRUNCATE_LIMIT = 599182
 
 const App = () => {
 
-  const [rowCount, setRowCount] = useState(window.rows?.length ?? 0)
+  const [rowCount, setRowCount] = useState(window.view?.length ?? 0)
   const [streamingStatus, setStreamingStatus] = useState(true)
   const [truncate, setTruncate] = useState(false)
 
@@ -44,7 +44,7 @@ const App = () => {
               width={width}
               height={height}
               overscanRowCount={15}
-              rowCount={truncate ? Math.min(599182, rowCount) : rowCount}
+              rowCount={truncate ? Math.min(TRUNCATE_LIMIT, rowCount) : rowCount}
               rowHeight={28}
               rowRenderer={Row}
             />
@@ -71,29 +71,52 @@ const App = () => {
   )
 }
 
-function collapse(index) {
-  const parentIndent = window.rows[index].split('\x1F')[2]
-  let i = index + 1
-  const arrayA = window.rows.slice(0, index + 1)
-  let indent
-  while (true) {
-    indent = window.rows[i].split('\x1F')[2]
-    if (parentIndent <= indent) { break }
-    window.collapsed[i] = window.rows[i++]
-  }
-  const arrayB = window.rows.slice(i, window.rows.length)
-  window.rows = arrayA.concat(arrayB)
-  window.updateRowCount(window.rows.length)
+function readNodeId(input) {
+  let res = ""
+  let i = input.length - 1
+  while (input[i] && ('0' <= input[i] && input[i] <= '9')) { res += input[i]; i-- }
+  return res
 }
 
-function expand(index) {
-  const expanded = []
-  let i
+function readRowIndex(input) {
+  let res = ""
+  let i = 0
+  while (input[i] && ('0' <= input[i] && input[i] <= '9')) { res += input[i]; i++ }
+  return res
+}
+
+function collapse(parentRow, viewIndex) {
+  const [ index, _0, _1, parentIndent ] = parentRow.split('\x1F')
+  const arrayA = window.view.slice(0, viewIndex + 1)
+  let indent
+  let i = viewIndex + 1
+  const start = i
+  while (true) {
+    const row = window.view[i++]
+    indent = row.split('\x1F')[3]
+    if (parentIndent >= indent) { break }
+  }
+  window.collapsed[index] = window.view.slice(start, i - 1)
+  const arrayB = window.view.slice(i - 1, window.view.length)
+  window.view = arrayA.concat(arrayB)
+  window.updateRowCount(window.view.length)
+}
+
+function expand(parentRow, viewIndex) {
+  const index = readRowIndex(parentRow)
+  const arrayA = window.view.slice(0, viewIndex + 1)
+  const arrayB = window.collapsed[index]
+  const arrayC = window.view.slice(viewIndex + 1, window.view.length)
+  window.collapsed[index] = undefined
+  window.view = arrayA.concat(arrayB, arrayC)
+  window.updateRowCount(window.view.length)
 }
 
 const Row = block(({ index, key, style }) => {
   const tabIndex = index + 1
-  let [ field, display, _indent ] = window.rows[index].split('\x1F')
+  const row = window.view[index]
+  const viewIndex = index
+  let [ rowIndex, field, display, _indent ] = row.split('\x1F')
   let indent = +_indent
   index = parseInt(field) && field
   const openbracket = display === '[' && display
@@ -101,9 +124,9 @@ const Row = block(({ index, key, style }) => {
   style.width = 'auto'
   const collapsible = Boolean(!isNaN(index) || field) && (!Boolean(display) || Boolean(openbracket))
   const collapseButton = collapsible ? (
-    window.collapsed[index] ?
-      <span className="collapse plus" aria-label="expand section" tabIndex={tabIndex} onClick={expand}>... + </span> :
-      <span className="collapse minus" aria-label="collapse section" tabIndex={tabIndex} onClick={collapse}> - </span>
+    window.collapsed[rowIndex] ?
+      <span className="collapse plus" aria-label="expand section" tabIndex={tabIndex} onClick={() => expand(row, viewIndex)}> <span>+</span> </span> :
+      <span className="collapse minus" aria-label="collapse section" tabIndex={tabIndex} onClick={() => collapse(row, viewIndex)}> - </span>
   ) : null
   return (
     isNaN(indent) ? <div className="error" key={key} style={style}>{_indent}</div> :
@@ -130,12 +153,7 @@ const Row = block(({ index, key, style }) => {
           <span className="closebracket"> { closebracket } </span> :
         <span className="display" tabIndex={display ? tabIndex : null}> { display } </span>
       }
-      {
-        collapseButton &&
-        <Fragment>
-          &nbsp;{ collapseButton }
-        </Fragment>
-      }
+      { collapseButton }
     </div>
   )
 })
@@ -143,4 +161,8 @@ const Row = block(({ index, key, style }) => {
 window.mountJSONViewer = elementId => {
   createRoot(document.getElementById(elementId))
     .render(<App />)
+  
+  window.addEventListener("keyup", event => {
+
+  })
 }
