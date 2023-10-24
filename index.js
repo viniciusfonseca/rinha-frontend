@@ -44,7 +44,8 @@ async function handleFileInput() {
   window.view = []
   window.collapsed = []
   window.bytesProcessed = 0
-  let lastUpdatedRowId = 0
+  window.lastUpdatedRowId = 0
+  window.storedUpdates = []
   parseWorker.onmessage = event => {
     if (typeof event.data === "number") {
       window.bytesProcessed += event.data
@@ -71,16 +72,7 @@ async function handleFileInput() {
     }
     if (typeof event.data === "object" && !Array.isArray(event.data)) {
       if (event.data.type === "updateNode") {
-        for (let i = lastUpdatedRowId; i < window.view; i++) {
-          const index = readRowIndex(window.view[i])
-          if (index === event.data.rowIndex) {
-            const data = window.view[i].split('\x1F')
-            data[4] = event.data.nodeId
-            window.view[i] = data.join('\x1F')
-            lastUpdatedRowId = i
-            break
-          }
-        }
+        window.updateRowNode(event.data.rowIndex, event.data.nodeId)
       }
     }
     // let startIdx = window.view.length
@@ -94,6 +86,25 @@ async function handleFileInput() {
     else {
       window.updateRowCount(window.view.length)
     }
+  }
+}
+
+window.updateRowNode = (rowIndex, nodeId) => {
+  const limit = window.isTruncated ? 599182 : window.view.length
+  let updated = false
+  for (let i = window.lastUpdatedRowId; i < limit; i++) {
+    const index = readRowIndex(window.view[i])
+    if (index === rowIndex) {
+      const data = window.view[i].split('\x1F')
+      data[4] = nodeId
+      window.view[i] = data.join('\x1F')
+      window.lastUpdatedRowId = i
+      updated = true
+      break
+    }
+  }
+  if (!updated) {
+    window.storedUpdates.push([rowIndex, nodeId])
   }
 }
 

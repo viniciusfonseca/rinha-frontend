@@ -11,6 +11,7 @@ const App = () => {
   const [rowCount, setRowCount] = useState(window.view?.length ?? 0)
   const [streamingStatus, setStreamingStatus] = useState(true)
   const [truncate, setTruncate] = useState(false)
+  window.isTruncated = truncate
 
   useEffect(() => {
     window.updateRowCount = setRowCount
@@ -23,8 +24,14 @@ const App = () => {
   const progress = `${Math.floor(window.bytesProcessed * 100 / window.filesize)}%`
 
   function disableTruncate() {
+    window.lastUpdatedRowId = 0
     const list = document.getElementsByClassName('ReactVirtualized__List')[0]
     list.scrollTop = 0
+    const len = window.storedUpdates.length
+    for (let i = 0; i < len; i++) {
+      const [ rowIndex, nodeId ] = window.storedUpdates.shift()
+      window.updateRowNode(rowIndex, nodeId)
+    }
     setTimeout(() => {
       setTruncate(false)
     })
@@ -116,13 +123,13 @@ const Row = block(({ index, key, style }) => {
   const tabIndex = index + 1
   const row = window.view[index]
   const viewIndex = index
-  let [ rowIndex, field, display, _indent ] = row.split('\x1F')
+  let [ rowIndex, field, display, _indent, nodeId ] = row.split('\x1F')
   let indent = +_indent
   index = parseInt(field) && field
   const openbracket = display === '[' && display
   const closebracket = display === ']' && display
   style.width = 'auto'
-  const collapsible = Boolean(!isNaN(index) || field) && (!Boolean(display) || Boolean(openbracket))
+  const collapsible = nodeId && Boolean(!isNaN(index) || field) && (!Boolean(display) || Boolean(openbracket))
   const collapseButton = collapsible ? (
     window.collapsed[rowIndex] ?
       <span className="collapse plus" aria-label="expand section" tabIndex={tabIndex} onClick={() => expand(row, viewIndex)}> <span>+</span> </span> :

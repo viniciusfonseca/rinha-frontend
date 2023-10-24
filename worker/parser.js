@@ -139,10 +139,10 @@ export class TokenParser {
           this.mode = TokenParserMode.ARRAY;
           this.state = TokenParserState.VALUE;
           this.display = '['
-          this.pushRow(false, null, this.nodeCounter)
+          this.nodeStack.push([this.nodeCounter, this.rowCount])
+          this.pushRow(false, null, this.nodeCounter++)
           this.indent++
           this.key = 0;
-          this.nodeStack.push(this.nodeCounter++)
           return;
         }
 
@@ -153,7 +153,9 @@ export class TokenParser {
         ) {
           this.display = ']'
           this.indent--
-          this.pushRow(true, null, this.nodeStack.pop())
+          const [ nodeId, rowIndex ] = this.nodeStack.pop()
+          this.pushRow(true, null, nodeId)
+          this.sendUpdate(rowIndex, nodeId)
           this.pop();
           return;
         }
@@ -171,6 +173,9 @@ export class TokenParser {
           Object.keys(this.value).length === 0
         ) {
           this.indent--
+          const [ nodeId, rowIndex ] = this.nodeStack.pop()
+          this.sendUpdate(rowIndex, nodeId)
+          this.sendUpdate(this.rowCount, nodeId)
           // this.pushRow()
           this.pop();
           return;
@@ -290,7 +295,7 @@ export class TokenParser {
  */
 function getDisplay(value) {
   if (value === null) { return "null" }
-  if (value || value === false) { return value.toString() }
+  if (value !== undefined) { return value.toString() }
   return ']'
 }
 
