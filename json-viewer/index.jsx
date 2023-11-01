@@ -58,26 +58,6 @@ const App = () => {
   )
 }
 
-function collapse(index) {
-  const parentIndent = window.rows[index].split('\x1F')[2]
-  let i = index + 1
-  const arrayA = window.rows.slice(0, index + 1)
-  let indent
-  while (true) {
-    indent = window.rows[i].split('\x1F')[2]
-    if (parentIndent <= indent) { break }
-    window.collapsed[i] = window.rows[i++]
-  }
-  const arrayB = window.rows.slice(i, window.rows.length)
-  window.rows = arrayA.concat(arrayB)
-  window.updateRowCount(window.rows.length)
-}
-
-function expand(index) {
-  const expanded = []
-  let i
-}
-
 const Row = block(({ index, key, style }) => {
   const tabIndex = index + 1
   let [ field, display, _indent ] = window.rows[index].split('\x1F')
@@ -87,12 +67,6 @@ const Row = block(({ index, key, style }) => {
   const openbracket = display === '[' && display
   const closebracket = display === ']' && display
   style.width = 'auto'
-  const collapsible = Boolean(!isNaN(index) || field) && (!Boolean(display) || Boolean(openbracket))
-  const collapseButton = collapsible ? (
-    window.collapsed[index] ?
-      <span className="collapse plus" tabIndex={tabIndex} onClick={expand}>... + </span> :
-      <span className="collapse minus" tabIndex={tabIndex} onClick={collapse}> - </span>
-  ) : null
   return (
     isNaN(indent) ? <div className="error" key={key} style={style}>{_indent}</div> :
     <div className="row" key={key} style={style}>
@@ -114,7 +88,6 @@ const Row = block(({ index, key, style }) => {
           <span className="closebracket"> { closebracket } </span> :
         <span className="display" tabIndex={display ? tabIndex : null}> { display } </span>
       }
-      {/* { collapseButton } */}
     </div>
   )
 })

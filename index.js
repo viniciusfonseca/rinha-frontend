@@ -42,7 +42,6 @@ async function handleFileInput() {
   setErrMsg(null)
   parseWorker.postMessage(inputEl.files[0])
   window.rows = []
-  window.collapsed = []
   window.bytesProcessed = 0
   parseWorker.onmessage = event => {
     if (typeof event.data === "number") {
@@ -71,7 +70,6 @@ async function handleFileInput() {
     // let startIdx = window.rows.length
     const chunk = event.data.split('\x1E')
     window.rows.push(...chunk)
-    window.collapsed.push(...Array(chunk.length).fill(null))
     if (shouldRenderViewer) {
       setSpinnerStatus(false)
       homeEl.parentNode.removeChild(homeEl)
