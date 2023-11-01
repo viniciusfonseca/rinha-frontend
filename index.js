@@ -17,11 +17,11 @@ function handleLabelKey(e) {
 inputLabelEl.addEventListener('keyup', handleLabelKey)
 inputLabelEl.addEventListener('keypress', handleLabelKey)
 
-function setErrMsg(msg) {
+function setErrMsg(msg, detail) {
   if (!msg) { errMsgEl.style.display = 'none' }
   else {
     errMsgEl.style.display = 'unset'
-    errMsgEl.innerText = msg
+    errMsgEl.innerHTML = `${msg}<br>Error detail: ${detail}`
   }
 }
 
@@ -30,34 +30,46 @@ function setSpinnerStatus(show) {
   inputLabelEl.style.display = show ? 'none' : 'unset'
 }
 
-let parseWorker = new Worker('parser.js')
+const MAX_CHUNK_SIZE = 2097152
+window.bytesProcessed = 0
+window.filesize = 1
+let parseWorker = new Worker('worker/index.min.js')
 async function handleFileInput() {
   const start = performance.now()
   window.filename = inputEl.files[0].name
+  window.filesize = inputEl.files[0].size
   setSpinnerStatus(true)
   setErrMsg(null)
   parseWorker.postMessage(inputEl.files[0])
   window.rows = []
+  window.bytesProcessed = 0
   parseWorker.onmessage = event => {
+    if (typeof event.data === "number") {
+      window.bytesProcessed += event.data
+      return
+    }
     if (event.data === null) {
       parseWorker.terminate()
-      parseWorker = new Worker('parser.js')
+      parseWorker = new Worker('worker/index.min.js')
       console.log(`finished streaming json in ${Math.ceil(performance.now() - start)}ms`)
       setTimeout(() => window.updateStreamingStatus(false), 10)
       return
     }
     if (event.data instanceof Error) {
       console.error(event.data)
-      setErrMsg('Invalid file. Please load a valid JSON file.')
+      setErrMsg('Invalid file. Please load a valid JSON file.', event.data.message)
+      setTimeout(() => window.updateStreamingStatus(false), 10)
       setSpinnerStatus(false)
       return
     }
     let shouldRenderViewer = false
     if (rows.length === 0) {
-      console.log(`finished parsing json in ${performance.now() - start}ms`)
+      console.log(`first stream emitted in ${performance.now() - start}ms`)
       shouldRenderViewer = true
     }
-    window.rows.push(...event.data.split('\x1E'))
+    // let startIdx = window.rows.length
+    const chunk = event.data.split('\x1E')
+    window.rows.push(...chunk)
     if (shouldRenderViewer) {
       setSpinnerStatus(false)
       homeEl.parentNode.removeChild(homeEl)
